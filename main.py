@@ -1,51 +1,211 @@
+# # main.py
+# import os
+# import shlex
+# import sys
+# from workspace import Workspace
+# from commands import AppendCommand, InsertCommand, DeleteCommand, ReplaceCommand
+
+# def parse_line_col(arg: str):
+#     """Helper to parse 'line:col' string into integers (0-based)"""
+#     try:
+#         parts = arg.split(':')
+#         if len(parts) != 2: return None
+#         return int(parts[0]) - 1, int(parts[1]) - 1
+#     except:
+#         return None
+
+# def main():
+#     workspace = Workspace()
+#     workspace.restore_session()
+
+#     print("=== Command Line Text Editor (Lab 1) ===")
+#     print("Type 'exit' to quit.")
+
+#     while True:
+#         prefix = workspace.active_editor.filepath if workspace.active_editor else "[No File]"
+#         try:
+#             user_input = input(f"{prefix} $ ").strip()
+#         except EOFError:
+#             break
+
+#         if not user_input: continue
+
+#         try:
+#             args = shlex.split(user_input)
+#         except ValueError as e:
+#             print(f"Input Error: {e}")
+#             continue
+            
+#         cmd = args[0]
+
+#         # --- Global / Workspace Commands ---
+#         if cmd == 'exit':
+#             workspace.save_session()
+#             for name, ed in list(workspace.editors.items()):
+#                 if ed.is_modified:
+#                     ans = input(f"Save changes to {name}? (y/n): ")
+#                     if ans.lower() == 'y':
+#                         ed.save_content()
+#             break
+        
+#         elif cmd == 'load':
+#             if len(args) < 2: print("Usage: load <file>")
+#             else: workspace.load_file(args[1])
+            
+#         elif cmd == 'save':
+#             target = 'active'
+#             if len(args) > 1: target = args[1]
+#             workspace.save_file(target)
+            
+#         elif cmd == 'init':
+#             if len(args) < 2: print("Usage: init <file> [with-log]")
+#             else:
+#                 with_log = len(args) > 2 and args[2] == 'with-log'
+#                 workspace.init_file(args[1], with_log)
+
+#         elif cmd == 'close':
+#             target = args[1] if len(args) > 1 else None
+#             workspace.close_file(target)
+
+#         elif cmd == 'edit':
+#             if len(args) < 2: print("Usage: edit <file>")
+#             else:
+#                 if args[1] in workspace.editors:
+#                     workspace.active_editor = workspace.editors[args[1]]
+#                     print(f"Switched to {args[1]}")
+#                 else:
+#                     print(f"File not open: {args[1]}")
+
+#         elif cmd == 'editor-list':
+#             workspace.list_editors()
+
+#         elif cmd == 'dir-tree':
+#             path = args[1] if len(args) > 1 else "."
+#             workspace.show_dir_tree(path)
+
+#         elif cmd == 'undo':
+#             if workspace.active_editor: workspace.active_editor.undo()
+#             else: print("No active editor")
+
+#         elif cmd == 'redo':
+#             if workspace.active_editor: workspace.active_editor.redo()
+#             else: print("No active editor")
+        
+#         # --- Logging Commands ---
+#         elif cmd == 'log-on':
+#             target = args[1] if len(args) > 1 else (workspace.active_editor.filepath if workspace.active_editor else None)
+#             if target: 
+#                 workspace.logger.enable_log(target)
+#                 print(f"Logging enabled for {target}")
+#             else: print("No file specified")
+            
+#         elif cmd == 'log-off':
+#             target = args[1] if len(args) > 1 else (workspace.active_editor.filepath if workspace.active_editor else None)
+#             if target: 
+#                 workspace.logger.disable_log(target)
+#                 print(f"Logging disabled for {target}")
+
+#         elif cmd == 'log-show':
+#             target = args[1] if len(args) > 1 else (workspace.active_editor.filepath if workspace.active_editor else None)
+#             if target:
+#                 log_path = f".{target}.log"
+#                 if os.path.exists(log_path):
+#                     with open(log_path, 'r') as f:
+#                         print(f.read())
+#                 else:
+#                     print("No log file found.")
+
+#         # --- Text Editing Commands ---
+#         elif cmd in ['append', 'insert', 'delete', 'replace', 'show']:
+#             if not workspace.active_editor:
+#                 print("Error: No active file opened.")
+#                 continue
+            
+#             editor = workspace.active_editor
+
+#             if cmd == 'show':
+#                 start, end = None, None
+#                 if len(args) > 1:
+#                     parts = args[1].split(':')
+#                     if len(parts) == 2:
+#                         start, end = int(parts[0]), int(parts[1])
+#                 editor.show(start, end)
+
+#             elif cmd == 'append':
+#                 if len(args) < 2: print("Usage: append \"text\"")
+#                 else: editor.execute_command(AppendCommand(editor, args[1]))
+
+#             elif cmd == 'insert':
+#                 if len(args) < 3: print("Usage: insert <line:col> \"text\"")
+#                 else:
+#                     lc = parse_line_col(args[1])
+#                     if lc: editor.execute_command(InsertCommand(editor, lc[0], lc[1], args[2]))
+#                     else: print("Invalid line:col format")
+
+#             elif cmd == 'delete':
+#                 if len(args) < 3: print("Usage: delete <line:col> <len>")
+#                 else:
+#                     lc = parse_line_col(args[1])
+#                     if lc: editor.execute_command(DeleteCommand(editor, lc[0], lc[1], int(args[2])))
+#                     else: print("Invalid line:col format")
+
+#             elif cmd == 'replace':
+#                 if len(args) < 4: print("Usage: replace <line:col> <len> \"text\"")
+#                 else:
+#                     lc = parse_line_col(args[1])
+#                     if lc: editor.execute_command(ReplaceCommand(editor, lc[0], lc[1], int(args[2]), args[3]))
+#                     else: print("Invalid line:col format")
+        
+#         else:
+#             print(f"Unknown command: {cmd}")
+
+# if __name__ == "__main__":
+#     main()
 # main.py
-import os
 import shlex
 import sys
 from workspace import Workspace
-from commands import AppendCommand, InsertCommand, DeleteCommand, ReplaceCommand
+from editor import TextEditor, XmlEditor
+from commands import *
+from spell_checker import SimpleSpellChecker
 
 def parse_line_col(arg: str):
-    """Helper to parse 'line:col' string into integers (0-based)"""
+    """Helper: '1:5' -> (0, 4)"""
     try:
         parts = arg.split(':')
         if len(parts) != 2: return None
         return int(parts[0]) - 1, int(parts[1]) - 1
-    except:
-        return None
+    except: return None
 
 def main():
     workspace = Workspace()
     workspace.restore_session()
+    spell_checker = SimpleSpellChecker()
 
-    print("=== Command Line Text Editor (Lab 1) ===")
+    print("=== Command Line Text/XML Editor (Lab 2) ===")
     print("Type 'exit' to quit.")
 
     while True:
         prefix = workspace.active_editor.filepath if workspace.active_editor else "[No File]"
         try:
             user_input = input(f"{prefix} $ ").strip()
-        except EOFError:
-            break
-
+        except EOFError: break
         if not user_input: continue
-
         try:
             args = shlex.split(user_input)
         except ValueError as e:
             print(f"Input Error: {e}")
             continue
-            
         cmd = args[0]
 
-        # --- Global / Workspace Commands ---
+        # --- Global Commands ---
         if cmd == 'exit':
             workspace.save_session()
+            # 提示保存
             for name, ed in list(workspace.editors.items()):
                 if ed.is_modified:
                     ans = input(f"Save changes to {name}? (y/n): ")
-                    if ans.lower() == 'y':
-                        ed.save_content()
+                    if ans.lower() == 'y': ed.save_content()
             break
         
         elif cmd == 'load':
@@ -53,15 +213,18 @@ def main():
             else: workspace.load_file(args[1])
             
         elif cmd == 'save':
-            target = 'active'
-            if len(args) > 1: target = args[1]
+            target = args[1] if len(args) > 1 else 'active'
             workspace.save_file(target)
             
         elif cmd == 'init':
-            if len(args) < 2: print("Usage: init <file> [with-log]")
+            # init <text|xml> <file> OR init <file>
+            if len(args) < 2: print("Usage: init <type> <file> OR init <file>")
+            elif args[1] in ['text', 'xml'] and len(args) > 2:
+                with_log = len(args) > 3 and args[3] == 'with-log'
+                workspace.init_file(args[1], args[2], with_log)
             else:
                 with_log = len(args) > 2 and args[2] == 'with-log'
-                workspace.init_file(args[1], with_log)
+                workspace.init_file('text', args[1], with_log)
 
         elif cmd == 'close':
             target = args[1] if len(args) > 1 else None
@@ -73,91 +236,109 @@ def main():
                 if args[1] in workspace.editors:
                     workspace.active_editor = workspace.editors[args[1]]
                     print(f"Switched to {args[1]}")
-                else:
-                    print(f"File not open: {args[1]}")
+                else: print(f"File not open: {args[1]}")
 
-        elif cmd == 'editor-list':
-            workspace.list_editors()
-
-        elif cmd == 'dir-tree':
-            path = args[1] if len(args) > 1 else "."
-            workspace.show_dir_tree(path)
-
-        elif cmd == 'undo':
+        elif cmd == 'editor-list': workspace.list_editors()
+        elif cmd == 'dir-tree': workspace.show_dir_tree(args[1] if len(args) > 1 else ".")
+        elif cmd == 'undo': 
             if workspace.active_editor: workspace.active_editor.undo()
-            else: print("No active editor")
-
-        elif cmd == 'redo':
+        elif cmd == 'redo': 
             if workspace.active_editor: workspace.active_editor.redo()
-            else: print("No active editor")
         
-        # --- Logging Commands ---
+        # --- Logging ---
         elif cmd == 'log-on':
             target = args[1] if len(args) > 1 else (workspace.active_editor.filepath if workspace.active_editor else None)
             if target: 
-                workspace.logger.enable_log(target)
+                workspace.logger.enable_log(target, "# log") # Default
                 print(f"Logging enabled for {target}")
-            else: print("No file specified")
-            
         elif cmd == 'log-off':
             target = args[1] if len(args) > 1 else (workspace.active_editor.filepath if workspace.active_editor else None)
-            if target: 
-                workspace.logger.disable_log(target)
-                print(f"Logging disabled for {target}")
-
+            if target: workspace.logger.disable_log(target)
         elif cmd == 'log-show':
             target = args[1] if len(args) > 1 else (workspace.active_editor.filepath if workspace.active_editor else None)
-            if target:
-                log_path = f".{target}.log"
-                if os.path.exists(log_path):
-                    with open(log_path, 'r') as f:
-                        print(f.read())
-                else:
-                    print("No log file found.")
+            if target and os.path.exists(f".{target}.log"):
+                with open(f".{target}.log", 'r') as f: print(f.read())
 
-        # --- Text Editing Commands ---
-        elif cmd in ['append', 'insert', 'delete', 'replace', 'show']:
+        # --- Spell Check ---
+        elif cmd == 'spell-check':
+            if not workspace.active_editor: print("No active file.")
+            else:
+                content = ""
+                ed = workspace.active_editor
+                if isinstance(ed, TextEditor):
+                    content = "\n".join(ed.lines)
+                elif isinstance(ed, XmlEditor) and ed.root:
+                    content = "".join(ed.root.itertext())
+                
+                errors = spell_checker.check(content)
+                if not errors: print("No errors found.")
+                else:
+                    for e in errors: print(e)
+
+        # --- Editor Dispatch ---
+        else:
             if not workspace.active_editor:
-                print("Error: No active file opened.")
+                print("Error: No active file.")
                 continue
             
             editor = workspace.active_editor
-
-            if cmd == 'show':
-                start, end = None, None
-                if len(args) > 1:
-                    parts = args[1].split(':')
-                    if len(parts) == 2:
-                        start, end = int(parts[0]), int(parts[1])
-                editor.show(start, end)
-
-            elif cmd == 'append':
-                if len(args) < 2: print("Usage: append \"text\"")
-                else: editor.execute_command(AppendCommand(editor, args[1]))
-
-            elif cmd == 'insert':
-                if len(args) < 3: print("Usage: insert <line:col> \"text\"")
+            
+            # 1. Text Editor Commands
+            if isinstance(editor, TextEditor):
+                if cmd == 'show':
+                    s, e = None, None
+                    if len(args) > 1:
+                        parts = args[1].split(':')
+                        if len(parts) == 2: s, e = int(parts[0]), int(parts[1])
+                    editor.show(s, e)
+                elif cmd == 'append':
+                    if len(args) < 2: print("Usage: append \"text\"")
+                    else: editor.execute_command(AppendCommand(editor, args[1]))
+                elif cmd == 'insert':
+                    if len(args) < 3: print("Usage: insert <line:col> \"text\"")
+                    else:
+                        lc = parse_line_col(args[1])
+                        if lc: editor.execute_command(InsertCommand(editor, lc[0], lc[1], args[2]))
+                elif cmd == 'delete':
+                    if len(args) < 3: print("Usage: delete <line:col> <len>")
+                    else:
+                        lc = parse_line_col(args[1])
+                        if lc: editor.execute_command(TextDeleteCommand(editor, lc[0], lc[1], int(args[2])))
+                elif cmd == 'replace':
+                    if len(args) < 4: print("Usage: replace <line:col> <len> \"text\"")
+                    else:
+                        lc = parse_line_col(args[1])
+                        if lc: editor.execute_command(ReplaceCommand(editor, lc[0], lc[1], int(args[2]), args[3]))
                 else:
-                    lc = parse_line_col(args[1])
-                    if lc: editor.execute_command(InsertCommand(editor, lc[0], lc[1], args[2]))
-                    else: print("Invalid line:col format")
+                    print(f"Unknown Text command: {cmd}")
 
-            elif cmd == 'delete':
-                if len(args) < 3: print("Usage: delete <line:col> <len>")
+            # 2. XML Editor Commands
+            elif isinstance(editor, XmlEditor):
+                if cmd == 'xml-tree':
+                    editor.show_tree()
+                elif cmd == 'insert-before':
+                    if len(args) < 4: print("Usage: insert-before <tag> <newId> <targetId> [text]")
+                    else:
+                        txt = args[4] if len(args) > 4 else ""
+                        editor.execute_command(InsertBeforeCommand(editor, args[1], args[2], args[3], txt))
+                elif cmd == 'append-child':
+                    if len(args) < 4: print("Usage: append-child <tag> <newId> <parentId> [text]")
+                    else:
+                        txt = args[4] if len(args) > 4 else ""
+                        editor.execute_command(AppendChildCommand(editor, args[1], args[2], args[3], txt))
+                elif cmd == 'edit-id':
+                    if len(args) < 3: print("Usage: edit-id <oldId> <newId>")
+                    else: editor.execute_command(EditIdCommand(editor, args[1], args[2]))
+                elif cmd == 'edit-text':
+                    if len(args) < 2: print("Usage: edit-text <elemId> [text]")
+                    else:
+                        txt = args[2] if len(args) > 2 else ""
+                        editor.execute_command(EditTextCommand(editor, args[1], txt))
+                elif cmd == 'delete':
+                    if len(args) < 2: print("Usage: delete <elemId>")
+                    else: editor.execute_command(XmlDeleteCommand(editor, args[1]))
                 else:
-                    lc = parse_line_col(args[1])
-                    if lc: editor.execute_command(DeleteCommand(editor, lc[0], lc[1], int(args[2])))
-                    else: print("Invalid line:col format")
-
-            elif cmd == 'replace':
-                if len(args) < 4: print("Usage: replace <line:col> <len> \"text\"")
-                else:
-                    lc = parse_line_col(args[1])
-                    if lc: editor.execute_command(ReplaceCommand(editor, lc[0], lc[1], int(args[2]), args[3]))
-                    else: print("Invalid line:col format")
-        
-        else:
-            print(f"Unknown command: {cmd}")
+                    print(f"Unknown XML command: {cmd}")
 
 if __name__ == "__main__":
     main()
