@@ -2,7 +2,8 @@ import unittest
 import os
 import shutil
 from workspace import Workspace
-from commands import AppendCommand, InsertCommand, DeleteCommand, ReplaceCommand
+# [修改点 1] DeleteCommand -> TextDeleteCommand
+from commands import AppendCommand, InsertCommand, TextDeleteCommand, ReplaceCommand
 
 class TestLab1Editor(unittest.TestCase):
     
@@ -32,6 +33,7 @@ class TestLab1Editor(unittest.TestCase):
     def test_01_init_file(self):
         """测试：初始化文件"""
         filename = "test_basic.txt"
+        # 注意：Lab2 Workspace 做了兼容处理，这里可以直接传文件名
         self.ws.init_file(filename)
         
         # 验证文件是否在编辑器列表中
@@ -61,21 +63,17 @@ class TestLab1Editor(unittest.TestCase):
         # 1. 准备基础文本
         ed.execute_command(AppendCommand(ed, "Hello World")) # Line 0
         
-        # 2. 测试 Insert: "Hello World" -> "Hello Py World"
-        # 注意：用户输入是1-based，但Command类内部逻辑如果是直接操作list，通常需要外部解析。
-        # 根根据 Member B 的代码，InsertCommand 接收的是 0-based index
-        # 假设我们要插入到第1行(index 0)，第6列(index 6，即空格后)
+        # 2. 测试 Insert
         ed.execute_command(InsertCommand(ed, 0, 6, "Py "))
         self.assertEqual(ed.lines[0], "Hello Py World")
         
-        # 3. 测试 Replace: "Hello Py World" -> "Hi Py World"
-        # 替换第1行(idx 0)，第0列(idx 0)，长度5("Hello") 为 "Hi"
+        # 3. 测试 Replace
         ed.execute_command(ReplaceCommand(ed, 0, 0, 5, "Hi"))
         self.assertEqual(ed.lines[0], "Hi Py World")
 
-        # 4. 测试 Delete: "Hi Py World" -> "Hi World"
-        # 删除第1行(idx 0)，第3列(idx 3)，长度3("Py ")
-        ed.execute_command(DeleteCommand(ed, 0, 3, 3))
+        # 4. 测试 Delete
+        # [修改点 2] DeleteCommand -> TextDeleteCommand
+        ed.execute_command(TextDeleteCommand(ed, 0, 3, 3))
         self.assertEqual(ed.lines[0], "Hi World")
 
     def test_04_undo_redo(self):
@@ -105,7 +103,17 @@ class TestLab1Editor(unittest.TestCase):
         """测试：日志文件生成"""
         filename = "test_log.txt"
         # 使用 init ... with-log
-        self.ws.init_file(filename, with_log=True)
+        # Lab2 Workspace兼容处理：若第1参数含点且第2参数非空，会识别为 (type, filename, with_log)
+        # 或者使用新的显式调用方式：ws.init_file('text', filename, with_log=True)
+        # 原有调用 ws.init_file(filename, with_log=True) 在兼容逻辑下可能需要调整参数位置
+        # 为了稳健，建议使用新的显式参数方式，或者依赖兼容逻辑（视 workspace.py 实现而定）
+        # 这里假设 workspace.py 的兼容逻辑能处理 init_file(filename, with_log=True) 这种情况
+        # 实际上 Lab2 代码中 init_file 签名是 (file_type, filepath, with_log)
+        # 只有一个位置参数时兼容逻辑生效。如果有关键字参数 with_log，可能需要显式指定类型。
+        
+        # 为了确保测试通过，这里显式指定类型 'text'
+        self.ws.init_file('text', filename, with_log=True)
+        
         ed = self.ws.active_editor
         
         # 执行操作
