@@ -1,5 +1,6 @@
 import shlex
 import sys
+import os
 from workspace import Workspace
 from editor import TextEditor, XmlEditor
 from commands import *
@@ -70,6 +71,8 @@ def main():
                 if args[1] in workspace.editors:
                     workspace.active_editor = workspace.editors[args[1]]
                     print(f"Switched to {args[1]}")
+                elif os.path.exists(args[1]):
+                    workspace.load_file(args[1])
                 else: print(f"File not open: {args[1]}")
 
         elif cmd == 'editor-list': workspace.list_editors()
