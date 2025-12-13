@@ -1,10 +1,41 @@
-from sqlalchemy import Column, Integer, String, Float, JSON, DateTime
+from sqlalchemy import Column, Integer, String, Float, JSON, DateTime, Enum
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 
 # 假设您在 app/core/database.py 中定义了 Base
 # from app.core.database import Base
 Base = declarative_base()
+
+# --- 枚举值常量定义 ---
+
+# 1. User.role
+USER_ROLES = ["staff_station","driver", "courier", "admin"]
+
+# 2. Station.type
+STATION_TYPES = ["outlet", "hub"] # 网点, 中转站
+
+# 3. Vehicle.status
+VEHICLE_STATUSES = ["idle", "busy", "maintenance"]
+
+# 4. Parcel.status (包裹主表状态)
+PARCEL_STATUSES = ["created", "sorting", "transporting", "dispatching", "delivered"]
+
+# 5. ParcelLog.action (包裹轨迹日志动作)
+PARCEL_LOG_ACTIONS = [
+    "created",
+    "sorting_started",
+    "sorting_completed",
+    "transport_started",
+    "transport_arrived",
+    "dispatch_started",
+    "dispatch_completed",
+]
+
+# 6. TransportTask.status (运输任务状态)
+TRANSPORT_TASK_STATUSES = ["planned", "in_transit", "completed", "cancelled"]
+
+# 7. DeliveryTask.status (派送任务状态)
+DELIVERY_TASK_STATUSES = ["assigned", "delivering", "success", "fail"] 
 
 # --- 1. 基础与用户模块 ---
 
@@ -18,6 +49,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True)
     password_hash = Column(String(255))
+    # 限制为 USER_ROLES
     role = Column(String(20)) 
     station_id = Column(Integer, nullable=True)  # 逻辑关联 Station.id
     phone = Column(String(20))
@@ -31,6 +63,7 @@ class Station(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100))
+    # 限制为 STATION_TYPES
     type = Column(String(20)) # outlet, hub
     address = Column(String(255))
     geo_location = Column(JSON) # 存储 {lat: ..., lng: ...}
@@ -45,6 +78,7 @@ class Vehicle(Base):
     id = Column(Integer, primary_key=True, index=True)
     plate_number = Column(String(20))
     capacity = Column(Float) # 载重
+    # 限制为 VEHICLE_STATUSES
     status = Column(String(20)) # idle, busy, maintenance
 
 
@@ -61,6 +95,7 @@ class Parcel(Base):
     receiver_info = Column(JSON)  # {name, phone, address}
     weight = Column(Float)
     volume = Column(String(50))
+    # 限制为 PARCEL_STATUSES
     status = Column(String(20), default="created") 
     
     # 逻辑关联 Station.id，无强约束
@@ -95,6 +130,7 @@ class ParcelLog(Base):
     parcel_id = Column(String(50), index=True) # 逻辑关联 Parcel.tracking_number
     station_id = Column(Integer)  # 逻辑关联 Station.id
     operator_id = Column(Integer) # 逻辑关联 User.id
+    # 限制为 PARCEL_LOG_ACTIONS
     action = Column(String(20))   # pickup, load, sort, etc.
     description = Column(String(255))
     created_at = Column(DateTime, default=datetime.datetime.now)
@@ -117,6 +153,7 @@ class TransportTask(Base):
     start_station_id = Column(Integer) # Station.id
     end_station_id = Column(Integer)   # Station.id
     
+    # 限制为 TRANSPORT_TASK_STATUSES
     status = Column(String(20)) # planned, in_transit, completed, cancelled
     start_time = Column(DateTime, nullable=True)
     end_time = Column(DateTime, nullable=True)
@@ -146,6 +183,7 @@ class DeliveryTask(Base):
     courier_id = Column(Integer, index=True) # 逻辑关联 User.id
     parcel_id = Column(String(50), index=True) # 逻辑关联 Parcel.tracking_number
     
+    # 限制为 DELIVERY_TASK_STATUSES
     status = Column(String(20)) # assigned, delivering, success, fail
     fail_reason = Column(String(255), nullable=True)
     assigned_at = Column(DateTime, default=datetime.datetime.now)

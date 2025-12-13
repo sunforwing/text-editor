@@ -1,27 +1,53 @@
-<!-- <script setup></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="app-layout">
+    <el-container>
+      <el-header>
+        <el-menu
+          :default-active="activeIndex"
+          mode="horizontal"
+          router
+          background-color="#545c64"
+          text-color="#fff"
+          active-text-color="#ffd04b"
+        >
+          <el-menu-item index="/login">Login</el-menu-item>
+          <el-menu-item index="/create-parcel">Create Parcel</el-menu-item>
+          <el-menu-item index="/trace-parcel">Trace Parcel</el-menu-item>
+          <el-menu-item index="/transport-task">Transport Task</el-menu-item>
+          <el-menu-item index="/delivery-task">Last Mile Delivery</el-menu-item>
+        </el-menu>
+      </el-header>
+      <el-main>
+        <router-view />
+      </el-main>
+    </el-container>
+  </div>
 </template>
 
-<style scoped></style> -->
-<template>
-  <router-view />
-</template>
+<script setup>
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const activeIndex = ref('/login')
+
+watch(
+  () => route.path,
+  (newPath) => {
+    activeIndex.value = newPath
+  }
+)
+</script>
 
 <style>
-/* 全局重置样式，去掉浏览器默认边距 */
-body, html {
+body {
   margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
-#app {
-  height: 100%;
+.app-layout {
+  min-height: 100vh;
+}
+.el-header {
+  padding: 0;
 }
 </style>

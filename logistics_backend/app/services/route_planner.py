@@ -1,4 +1,4 @@
-def calculate_next_station(current_station_id: int, address: str):
+def calculate_next_station(current_station_id: int):
     """
     模拟路径规划算法
     实际项目中应基于图算法 (Dijkstra) 或查询数据库中的路由规则表

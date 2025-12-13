@@ -1,33 +1,61 @@
 import request from '@/utils/request'
 
-// --- 3.1 揽收 ---
-export function createParcel(data) {
+// Auth
+export function login(data) {
   return request({
-    url: '/parcels',
+    url: '/auth/login',
     method: 'post',
     data
   })
 }
 
-export function getParcelTrace(trackingNumber) {
+// Parcels
+export function createParcel(data) {
   return request({
-    url: `/parcels/${trackingNumber}/trace`,
-    method: 'get'
-  })
-}
-
-// --- 3.4 快递员 ---
-export function getCourierTasks() {
-  return request({
-    url: '/courier/my-tasks',
-    method: 'get'
-  })
-}
-
-export function submitDeliveryResult(trackingNumber, data) {
-  return request({
-    url: `/delivery-tasks/${trackingNumber}/result`,
+    url: '/parcels/',
     method: 'post',
+    data
+  })
+}
+
+export function traceParcel(trackingNumber) {
+  return request({
+    url: '/parcels/trace',
+    method: 'get',
+    params: { tracking_number: trackingNumber }
+  })
+}
+
+// Transport
+export function createTransportTask(data) {
+  return request({
+    url: '/transport/start',
+    method: 'post',
+    data
+  })
+}
+
+export function updateTransportStatus(data) {
+  return request({
+    url: '/transport/status',
+    method: 'put',
+    data
+  })
+}
+
+// Delivery
+export function createDeliveryTask(data) {
+  return request({
+    url: '/delivery/start',
+    method: 'post',
+    data
+  })
+}
+
+export function updateDeliveryStatus(data) {
+  return request({
+    url: '/delivery/status',
+    method: 'put',
     data
   })
 }

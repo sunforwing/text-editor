@@ -1,31 +1,29 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
 
-// 创建 axios 实例
 const service = axios.create({
-  // Vite 环境变量，开发时通过 proxy 代理到后端 Python 服务
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1', 
-  timeout: 10000 
+  baseURL: '/api/v1', // Matches the proxy configuration in vite.config.js and backend prefix
+  timeout: 5000
 })
 
-// 请求拦截器 (添加 Token)
+// Request interceptor
 service.interceptors.request.use(
   config => {
-    // 假设 Token 存在 localStorage
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
-    }
+    // You can add token here if needed
     return config
   },
-  error => Promise.reject(error)
+  error => {
+    console.log(error)
+    return Promise.reject(error)
+  }
 )
 
-// 响应拦截器
+// Response interceptor
 service.interceptors.response.use(
-  response => response.data,
+  response => {
+    return response.data
+  },
   error => {
-    ElMessage.error(error.response?.data?.message || '网络请求错误')
+    console.log('err' + error)
     return Promise.reject(error)
   }
 )
